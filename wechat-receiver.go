@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/xml"
 	"log"
 	"net/http"
 
@@ -16,6 +17,15 @@ type wechatReceiveData struct {
 	MsgID        int    `form:"MsgId"`
 }
 
+type outputXML struct {
+	XMLName      xml.Name `xml:"xml"`
+	ToUserName   string   `xml:"ToUserName"`
+	FromUserName string   `xml:"FromUserName"`
+	CreateTime   string   `xml:"CreateTime"`
+	MsgType      string   `xml:"MsgType"`
+	Content      string   `xml:"Content"`
+}
+
 func main() {
 	router := gin.Default()
 
@@ -25,20 +35,17 @@ func main() {
 }
 
 func gettingDataReceiver(c *gin.Context) {
-	log.Println("=======gettingDataReceiver started=========")
 	var receivedData wechatReceiveData
 	if err := c.ShouldBindXML(&receivedData); err == nil {
-		log.Println("No error")
-		log.Println(receivedData.ToUserName)
+		log.Println(receivedData.FromUserName)
 	} else {
 		log.Println("Error occurred")
-		log.Println(err.Error())
 	}
 
-	c.XML(http.StatusOK, gin.H{
-		"ToUserName":   "tester-suh",
-		"FromUserName": "from Tester",
-		"CreateTime":   "2018-01-04",
-		"MsgType":      "text",
-		"Content":      "Recived data" + receivedData.ToUserName})
+	c.XML(http.StatusOK, outputXML{
+		ToUserName:   "tester-suh",
+		FromUserName: "from Tester",
+		CreateTime:   "2018-01-04",
+		MsgType:      "text",
+		Content:      "Hello " + receivedData.FromUserName})
 }
